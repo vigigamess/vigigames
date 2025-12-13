@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">جزئیات خبر - Vigigames</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="logo-container">
+                <span class="logo-vg">VG</span>
+                <span class="logo-text">VIGIGAMES</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="news-detail-main container">
+        <section class="news-detail-section" data-aos="fade-up">
+            <h1 id="news-detail-title" class="news-detail-title"></h1>
+            <img id="news-detail-image" src="" alt="" class="news-detail-image">
+            <div id="news-detail-content" class="news-detail-content"></div>
+            <div class="news-detail-meta">
+                <span class="news-card-date"><i class="fa-regular fa-calendar-days"></i> <span id="news-detail-date"></span></span>
+                <span class="news-card-likes"><i class="fa-solid fa-heart" id="news-detail-heart-icon"></i> <span id="news-detail-likes"></span></span>
+            </div>
+            <a href="index.html#news" class="back-to-news-btn"><i class="fa-solid fa-arrow-right-to-bracket fa-rotate-180"></i> بازگشت به اخبار</a>
+
+            <div class="comments-section">
+                <h2>نظرات</h2>
+                <div id="news-comments-container" class="news-comments-container"></div>
+                <div id="news-comment-form-container" class="news-comment-form-container"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">VIGI<span class="highlight">GAMES</span></div>
+            <div class="social-links">
+                <a href="#"><i class="fa-brands fa-discord"></i></a>
+                <a href="#"><i class="fa-brands fa-telegram"></i></a>
+                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#"><i class="fa-brands fa-github"></i></a>
+            </div>
+            <p>&copy; 2025 تمامی حقوق برای ویجی‌گیمز محفوظ است.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+    </script>
+
+    <script src="news-detail.js"></script> <!-- New script for news detail page -->
+</body>
+</html>
