@@ -1,364 +1,0 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIGIGAMES | دنیای پروژه‌های گیمینگ</title>
-    <!-- CSS -->
-    <link rel="stylesheet" href="style.css">
-    <!-- AOS Animation Library -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-
-    <!-- Background Animation Layer -->
-    <div class="bg-grid"></div>
-    <div class="scanline"></div>
-    <div class="vignette"></div>
-    <div class="fog-layer"></div>
-    <div class="lightning-overlay"></div>
-    <div class="particles" id="particles"></div>
-
-    <!-- Hacker Robot -->
-    <div class="hacker-robot" id="hacker-robot">
-        <div class="robot-head">
-            <div class="robot-antenna"></div>
-            <div class="robot-eyes">
-                <div class="robot-eye left"></div>
-                <div class="robot-eye right"></div>
-            </div>
-            <div class="robot-mouth"></div>
-        </div>
-        <div class="speech-bubble" id="robot-msg"></div>
-    </div>
-
-    <!-- Header -->
-    <header>
-        <div class="logo-container">
-            <span class="logo-vg">VG</span>
-            <div class="logo-text">VIGI<span class="highlight">GAMES</span></div>
-        </div>
-        <button id="admin-btn" class="cyber-btn">
-            <span class="btn-text">ورود مدیر</span>
-            <span class="btn-glitch"></span>
-        </button>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content" data-aos="zoom-in">
-            <h1 class="glitch-text" data-text="VIGIGAMES">VIGIGAMES</h1>
-            <p class="subtitle" id="typing-text"></p>
-            <div class="hero-actions">
-                <a href="#projects-section" class="cyber-btn primary-btn">مشاهده پروژه‌ها</a>
-                <a href="#features-section" class="cyber-btn secondary-btn">خدمات ما</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Search & Filter -->
-    <div class="search-bar-container" data-aos="fade-up">
-        <div class="search-input-wrapper">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="search-input" placeholder="جستجو در پروژه‌ها...">
-        </div>
-        <div class="filter-buttons">
-            <button class="filter-btn active" data-filter="all">همه</button>
-            <button class="filter-btn" data-filter="completed">تکمیل شده</button>
-            <button class="filter-btn" data-filter="in-progress">در حال ساخت</button>
-        </div>
-    </div>
-    
-    <!-- Stats Section -->
-    <section class="stats-section">
-        <div class="stat-box" data-aos="fade-up" data-aos-delay="100">
-            <i class="fa-solid fa-code-branch"></i>
-            <div class="stat-number" data-target="0" id="completed-projects-count">0</div>
-            <div class="stat-label">پروژه انجام شده</div>
-        </div>
-        <div class="stat-box" data-aos="fade-up" data-aos-delay="200">
-            <i class="fa-solid fa-chart-line"></i>
-            <div class="stat-number" data-target="0" id="site-visits-count">0</div>
-            <div class="stat-label">آمار بازدید از سایت</div>
-        </div>
-        <div class="stat-box" data-aos="fade-up" data-aos-delay="300">
-            <i class="fa-solid fa-hourglass-half"></i>
-            <div class="stat-number" data-target="0" id="in-progress-projects-count">0</div>
-            <div class="stat-label">پروژه در حال ساخت</div>
-        </div>
-        <div class="stat-box" data-aos="fade-up" data-aos-delay="400">
-            <i class="fa-solid fa-ban"></i>
-            <div class="stat-number" data-target="0" id="cancelled-projects-count">0</div>
-            <div class="stat-label">پروژه لغو شده</div>
-        </div>
-        <div class="stat-box" data-aos="fade-up" data-aos-delay="500">
-            <i class="fa-solid fa-newspaper"></i>
-            <div class="stat-number" data-target="0" id="total-news-count">0</div>
-            <div class="stat-label">کل اخبار</div>
-
-    </section>
-
-    <!-- Features Section -->
-    <section id="features-section" class="features-container">
-        <div class="section-header" data-aos="fade-up">
-            <h2 class="section-title">چرا <span class="highlight">ویجی‌گیمز</span>؟</h2>
-            <div class="title-bar"></div>
-        </div>
-        <div class="features-grid">
-            <div class="feature-card" data-aos="flip-right">
-                <div class="feature-icon"><i class="fa-brands fa-unity"></i></div>
-                <h3>موتورهای قدرتمند</h3>
-                <p>استفاده از جدیدترین تکنولوژی‌های وب و موتورهای بازی‌سازی برای بالاترین کیفیت.</p>
-            </div>
-            <div class="feature-card" data-aos="flip-left" data-aos-delay="100">
-                <div class="feature-icon"><i class="fa-solid fa-mobile-screen"></i></div>
-                <h3>ریسپانسیو کامل</h3>
-                <p>اجرای روان و بدون نقص روی تمامی دستگاه‌ها از جمله موبایل، تبلت و دسکتاپ.</p>
-            </div>
-
-            <div class="feature-card" data-aos="flip-left" data-aos-delay="300">
-                <div class="feature-icon"><i class="fa-solid fa-rocket"></i></div>
-                <h3>سرعت فوق‌العاده</h3>
-                <p>بهینه‌سازی شده برای لود سریع و تجربه کاربری روان بدون لگ.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Projects Section -->
-    <section id="projects-section" class="projects-container">
-        <div class="section-header" data-aos="fade-up">
-            <h2 class="section-title">پروژه‌های <span class="highlight">برتر</span></h2>
-            <div class="title-bar"></div>
-        </div>
-
-
-        
-        <div id="projects-grid" class="grid">
-            <!-- Projects will be injected here by JS -->
-        </div>
-        <div id="project-pagination" class="pagination-container"></div>
-    </section>
-
-    <!-- News Section -->
-    <section id="news-section" class="news-container">
-        <div class="section-header" data-aos="fade-up">
-            <h2 class="section-title">آخرین <span class="highlight">اخبار</span></h2>
-            <div class="title-bar"></div>
-        </div>
-        <div id="news-grid" class="grid">
-            <!-- News articles will be injected here by JS -->
-        </div>
-        <div id="news-pagination" class="pagination-container"></div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact-section" class="contact-container">
-        <div class="section-header" data-aos="fade-up">
-            <h2 class="section-title">تماس با <span class="highlight">ما</span></h2>
-            <div class="title-bar"></div>
-        </div>
-        <div class="contact-form-wrapper" data-aos="fade-up" data-aos-delay="200">
-            <form id="contact-form" class="glass-panel">
-                <div class="form-group">
-                    <label for="contact-name">نام شما</label>
-                    <input type="text" id="contact-name" class="cyber-input" required>
-                </div>
-                <div class="form-group">
-                    <label for="contact-email">ایمیل شما</label>
-                    <input type="email" id="contact-email" class="cyber-input" required>
-                </div>
-                <div class="form-group">
-                    <label for="contact-subject">موضوع</label>
-                    <input type="text" id="contact-subject" class="cyber-input" required>
-                </div>
-                <div class="form-group">
-                    <label for="contact-message">پیام شما</label>
-                    <textarea id="contact-message" class="cyber-input" rows="5" required></textarea>
-                </div>
-                <button type="submit" class="cyber-btn full-width">
-                    <span class="btn-text">ارسال پیام</span>
-                </button>
-            </form>
-        </div>
-    </section>
-
-    <!-- Contact Info Section -->
-    <section id="contact-info-section" class="contact-info-container">
-        <div class="contact-info-grid">
-            <div class="info-card" data-aos="fade-up" data-aos-delay="100">
-                <div class="info-icon"><i class="fa-solid fa-phone"></i></div>
-                <h3>شماره تماس</h3>
-                <p>...</p>
-            </div>
-            <div class="info-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="info-icon"><i class="fa-solid fa-location-dot"></i></div>
-                <h3>موقعیت مکانی</h3>
-                <p>خوزستان، ایران</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Login Modal -->
-    <div id="login-modal" class="modal-overlay">
-        <div class="modal-content glass-panel">
-            <span class="close-btn"><i class="fa-solid fa-xmark"></i></span>
-            <div class="modal-header">
-                <i class="fa-solid fa-user-secret modal-icon"></i>
-                <h2>ناحیه کاربری</h2>
-            </div>
-            <div class="form-group">
-                <label>رمز عبور امنیتی</label>
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-key"></i>
-                    <input type="password" id="password-input" class="cyber-input" placeholder="ACCESS CODE">
-                </div>
-            </div>
-            <button onclick="checkPassword()" class="cyber-btn full-width">
-                <span class="btn-text">احراز هویت</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Admin Project Modal (Add/Edit) -->
-    <div id="admin-modal" class="modal-overlay">
-        <div class="modal-content glass-panel large-modal">
-            <span class="close-btn"><i class="fa-solid fa-xmark"></i></span>
-            <h2 id="modal-title" class="modal-title">ثبت پروژه جدید</h2>
-            <div id="admin-actions-container" class="admin-actions" style="margin-bottom: 20px;">
-                <button class="cyber-btn" onclick="showProjectForm()">مدیریت پروژه‌ها</button>
-                <button class="cyber-btn" onclick="showNewsForm()">مدیریت اخبار</button>
-            </div>
-            <form id="project-form" novalidate>
-                <input type="hidden" id="project-id">
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>عنوان پروژه</label>
-                        <input type="text" id="project-title" class="cyber-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label>وضعیت توسعه</label>
-                        <select id="project-status" class="cyber-input">
-                            <option value="in-progress">در حال ساخت 🚧</option>
-                            <option value="completed">تکمیل شده ✅</option>
-                            <option value="cancelled">لغو شده ❌</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>توضیحات فنی</label>
-                    <textarea id="project-desc" class="cyber-input" rows="4" required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>کاور پروژه</label>
-                    <div class="file-upload-wrapper">
-                        <input type="file" id="project-image" class="file-input" accept="image/*">
-                        <div class="file-upload-btn">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            انتخاب تصویر
-                        </div>
-                    </div>
-                </div>
-
-                <button type="submit" class="cyber-btn full-width action-save">
-                    <span class="btn-text">ذخیره تغییرات</span>
-                </button>
-            </form>
-
-            <!-- Admin News Form -->
-            <form id="news-form" style="display: none;" novalidate>
-                <h2 id="news-modal-title" class="modal-title" style="display: none;">ثبت خبر جدید</h2>
-                <input type="hidden" id="news-id" name="id">
-                
-                <div class="form-group">
-                    <label>عنوان خبر</label>
-                    <input type="text" id="news-title" name="title" class="cyber-input" required>
-                </div>
-
-                <div class="form-group">
-                    <label>متن خبر</label>
-                    <textarea id="news-content" name="content" class="cyber-input" rows="6" required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>تصویر خبر</label>
-                    <div class="file-upload-wrapper">
-                        <input type="file" id="news-image" name="image" class="file-input" accept="image/*">
-                        <div class="file-upload-btn">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            انتخاب تصویر
-                        </div>
-                    </div>
-                </div>
-
-                <button type="submit" class="cyber-btn full-width action-save">
-                    <span class="btn-text">ذخیره خبر</span>
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Scroll To Top Button -->
-    <button id="scroll-top" class="scroll-top-btn">
-        <i class="fa-solid fa-arrow-up"></i>
-    </button>
-
-    <!-- Notification Toast -->
-    <div id="notification" class="notification-toast"></div>
-
-    <!-- Footer -->
-    <footer>
-        <div class="footer-content">
-            <div class="footer-logo">VIGI<span class="highlight">GAMES</span></div>
-            <div class="social-links">
-                <a href="#"><i class="fa-brands fa-discord"></i></a>
-                <a href="https://t.me/vigigamess"><i class="fa-brands fa-telegram"></i></a>
-                <a href="#"><i class="fa-brands fa-instagram"></i></a>
-                <a href="#"><i class="fa-brands fa-github"></i></a>
-            </div>
-            <p>&copy; 2025 تمامی حقوق برای ویجی‌گیمز محفوظ است.</p>
-        </div>
-    </footer>
-
-    <!-- Scripts -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
-    <script src="https://cdn.tiny.cloud/1/dhvl163udb8et8m77snzdm7b3wlbdvuv25jfvmsw8n2qr6kn/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
-    <script>
-    tinymce.init({
-        selector: '#project-desc',
-        api_key: 'dhvl163udb8et8m77snzdm7b3wlbdvuv25jfvmsw8n2qr6kn',
-        plugins: 'advlist autolink lists link image charmap anchor',
-        toolbar_mode: 'floating',
-        toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-        directionality: 'rtl',
-        language: 'fa',
-        height: 200,
-        readonly: false
-    });
-    tinymce.init({
-        selector: '#news-content',
-        api_key: 'dhvl163udb8et8m77snzdm7b3wlbdvuv25jfvmsw8n2qr6kn',
-        plugins: 'advlist autolink lists link image charmap anchor',
-        toolbar_mode: 'floating',
-        toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-        directionality: 'rtl',
-        language: 'fa',
-        height: 300,
-        readonly: false
-    });
-    </script>
-    <script>
-        AOS.init({
-            duration: 800,
-            easing: 'ease-out-cubic',
-            once: true
-        });
-    </script>
-    <script src="script.js"></script>
-</body>
-</html>
