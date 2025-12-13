@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Stored hashed password (replace with a strong, securely generated hash in a real application)
 const ADMIN_PASSWORD_HASH = '2f6a74f14825e59f858c5fcf40e68d2a8fa83532a1cda7e02e54fcb606d40cbe'; // SHA-256 hash of 'Vigigames_S3cur3P@ss!'

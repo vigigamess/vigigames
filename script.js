@@ -58,9 +58,11 @@ function initializeVisitorCounter() {
 
 
 // Function to fetch projects from projects.json
+const BASE_URL = 'https://vigigames2-vigigames.replit.dev';
+
 async function fetchProjects(page = currentProjectPage, limit = projectsPerPage, searchTerm = '', statusFilter = '') {
     try {
-        const response = await fetch(`/api/projects?page=${page}&limit=${limit}&searchTerm=${searchTerm}&statusFilter=${statusFilter}`);
+        const response = await fetch(`${BASE_URL}/api/projects?page=${page}&limit=${limit}&searchTerm=${searchTerm}&statusFilter=${statusFilter}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -79,7 +81,7 @@ async function fetchProjects(page = currentProjectPage, limit = projectsPerPage,
 // Function to fetch news from news.json
 async function fetchNews(page = currentNewsPage, limit = newsPerPage, searchTerm = '') {
     try {
-        const response = await fetch(`/api/news?page=${page}&limit=${limit}&searchTerm=${searchTerm}`);
+        const response = await fetch(`${BASE_URL}/api/news?page=${page}&limit=${limit}&searchTerm=${searchTerm}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -98,7 +100,7 @@ async function fetchNews(page = currentNewsPage, limit = newsPerPage, searchTerm
 // Function to fetch stats from the backend
 async function fetchStats() {
     try {
-        const response = await fetch('/api/stats');
+        const response = await fetch(`${BASE_URL}/api/stats`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -271,7 +273,7 @@ window.checkPassword = async function() {
     const password = passwordInput.value;
 
     try {
-        const response = await fetch('/api/login', {
+        const response = await fetch(`${BASE_URL}/api/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -350,7 +352,7 @@ function renderProjectPagination() {
 // Edit News
 window.editNews = async function(id) {
     try {
-        const response = await fetch(`/api/news/${id}`);
+        const response = await fetch(`${BASE_URL}/api/news/${id}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -389,7 +391,7 @@ window.deleteNews = async function(id) {
     }
 
     try {
-        const response = await fetch(`/api/news/${id}`, {
+        const response = await fetch(`${BASE_URL}/api/news/${id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
