@@ -382,51 +382,6 @@ app.put(
             res.status(500).json({ success: false, message: "خطا در به‌روزرسانی وضعیت کامنت." });
         }
     },
-);                }
-                let news = JSON.parse(data);
-                const newsIndex = news.findIndex((n) => n.id === newsId);
-
-                if (newsIndex !== -1) {
-                    const commentIndex = news[newsIndex].comments.findIndex(
-                        (c) => c.id === commentId,
-                    );
-
-                    if (commentIndex !== -1) {
-                        news[newsIndex].comments[commentIndex].approved =
-                            approved;
-
-                        fs.writeFile(
-                            path.join(__dirname, "..", "news.json"),
-                            JSON.stringify(news, null, 2),
-                            "utf8",
-                            (err) => {
-                                if (err) {
-                                    console.error(
-                                        "Error writing news.json:",
-                                        err,
-                                    );
-                                    return res
-                                        .status(500)
-                                        .send("Error updating comment status");
-                                }
-                                res.status(200).json({
-                                    success: true,
-                                    message:
-                                        "وضعیت کامنت با موفقیت به‌روزرسانی شد.",
-                                    comment:
-                                        news[newsIndex].comments[commentIndex],
-                                });
-                            },
-                        );
-                    } else {
-                        res.status(404).send("Comment not found");
-                    }
-                } else {
-                    res.status(404).send("News not found");
-                }
-            },
-        );
-    },
 );
 
 app.delete("/api/news/:id", authenticateJWT, async (req, res) => {
