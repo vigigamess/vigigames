@@ -34,7 +34,6 @@ async function hashPassword(password) {
     });
 }
 
-// Middleware to parse JSON bodies
 app.use(express.json());
 app.use(
     cors({
@@ -70,7 +69,7 @@ const authenticateJWT = (req, res, next) => {
 app.use((req, res, next) => {
     res.setHeader(
         "Content-Security-Policy",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tiny.cloud https://unpkg.com https://cdnjs.cloudflare.com https://sp.tinymce.com; connect-src 'self' https://cdn.tiny.cloud https://sp.tinymce.com https://cdnjs.cloudflare.com https://6c6dd505-6a11-48a5-91ab-380321138fb-00-3fllc2bfwra4u.worf.replit.dev; img-src 'self' data: https://cdn.tiny.cloud https://raw.githubusercontent.com https://images.unsplash.com https://sp.tinymce.com",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tiny.cloud https://unpkg.com https://cdnjs.cloudflare.com https://sp.tinymce.com; connect-src 'self' https://astonishing-pothos-d4a0f1.netlify.app https://cdn.tiny.cloud https://sp.tinymce.com https://cdnjs.cloudflare.com; img-src 'self' data: https://cdn.tiny.cloud https://raw.githubusercontent.com https://images.unsplash.com https://sp.tinymce.com",
     );
     next();
 });
