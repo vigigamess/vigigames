@@ -70,7 +70,7 @@ const authenticateJWT = (req, res, next) => {
 app.use((req, res, next) => {
     res.setHeader(
         "Content-Security-Policy",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tiny.cloud https://unpkg.com https://cdnjs.cloudflare.com https://sp.tinymce.com; connect-src 'self' https://cdn.tiny.cloud https://sp.tinymce.com https://cdnjs.cloudflare.com; img-src 'self' data: https://cdn.tiny.cloud https://raw.githubusercontent.com https://images.unsplash.com https://sp.tinymce.com",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tiny.cloud https://unpkg.com https://cdnjs.cloudflare.com https://sp.tinymce.com; connect-src 'self' https://cdn.tiny.cloud https://sp.tinymce.com https://cdnjs.cloudflare.com https://6c6dd505-6a11-48a5-91ab-380321138fb-00-3fllc2bfwra4u.worf.replit.dev; img-src 'self' data: https://cdn.tiny.cloud https://raw.githubusercontent.com https://images.unsplash.com https://sp.tinymce.com",
     );
     next();
 });
@@ -606,12 +606,10 @@ app.put(
         const { approved } = req.body;
 
         if (typeof approved !== "boolean") {
-            return res
-                .status(400)
-                .json({
-                    success: false,
-                    message: "وضعیت تایید (approved) باید بولی باشد.",
-                });
+            return res.status(400).json({
+                success: false,
+                message: "وضعیت تایید (approved) باید بولی باشد.",
+            });
         }
 
         fs.readFile(
@@ -718,12 +716,10 @@ app.post("/api/news/:id/comments", (req, res) => {
     const { author, text } = req.body;
 
     if (!author || !text) {
-        return res
-            .status(400)
-            .json({
-                success: false,
-                message: "نام نویسنده و متن کامنت الزامی است.",
-            });
+        return res.status(400).json({
+            success: false,
+            message: "نام نویسنده و متن کامنت الزامی است.",
+        });
     }
 
     fs.readFile(
@@ -754,12 +750,10 @@ app.post("/api/news/:id/comments", (req, res) => {
                     const { name, email, subject, message } = req.body;
 
                     if (!name || !email || !subject || !message) {
-                        return res
-                            .status(400)
-                            .json({
-                                success: false,
-                                message: "لطفاً تمام فیلدهای فرم را پر کنید.",
-                            });
+                        return res.status(400).json({
+                            success: false,
+                            message: "لطفاً تمام فیلدهای فرم را پر کنید.",
+                        });
                     }
 
                     try {
@@ -846,12 +840,10 @@ app.post("/api/contact", async (req, res) => {
     const { name, email, subject, message } = req.body;
 
     if (!name || !email || !subject || !message) {
-        return res
-            .status(400)
-            .json({
-                success: false,
-                message: "لطفاً تمام فیلدهای فرم را پر کنید.",
-            });
+        return res.status(400).json({
+            success: false,
+            message: "لطفاً تمام فیلدهای فرم را پر کنید.",
+        });
     }
 
     try {
