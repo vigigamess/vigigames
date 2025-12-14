@@ -2,10 +2,9 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const cors = require("cors");
-const multer = require("multer"); // Add multer
-const crypto = require("crypto"); // Add crypto for password hashing
-const jwt = require("jsonwebtoken"); // Add jsonwebtoken for JWT
-const nodemailer = require("nodemailer"); // Add nodemailer for email sending
+const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 const JWT_SECRET = "mysecretkey";
 
@@ -20,12 +19,10 @@ const transporter = nodemailer.createTransport({
 
 const app = express();
 
-
-// Stored hashed password (replace with a strong, securely generated hash in a real application)
+// Stored hashed password
 const ADMIN_PASSWORD_HASH =
-    "2f6a74f14825e59f858c5fcf40e68d2a8fa83532a1cda7e02e54fcb606d40cbe"; // SHA-256 hash of 'Vigigames_S3cur3P@ss!'
+    "2f6a74f14825e59f858c5fcf40e68d2a8fa83532a1cda7e02e54fcb606d40cbe";
 
-// Helper function to hash password
 async function hashPassword(password) {
     return new Promise((resolve, reject) => {
         const hash = crypto.createHash("sha256");
@@ -41,9 +38,8 @@ app.use(
         methods: ["GET", "POST", "PUT", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization"],
     }),
-); // Enable CORS for all routes
+);
 
-// Middleware for JWT authentication
 const authenticateJWT = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
@@ -56,13 +52,13 @@ const authenticateJWT = (req, res, next) => {
             console.log("JWT_SECRET used for verification:", JWT_SECRET);
             if (err) {
                 console.error("JWT Verification Error:", err);
-                return res.sendStatus(403); // Forbidden
+                return res.sendStatus(403);
             }
             req.user = user;
             next();
         });
     } else {
-        res.sendStatus(401); // Unauthorized
+        res.sendStatus(401);
     }
 };
 
@@ -74,28 +70,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Serve static files from the parent directory (your frontend)
 app.use(express.static(path.join(__dirname, "..")));
-
-// Create 'uploads' directory if it doesn't exist
-const uploadsDir = path.join(__dirname, "..", "uploads");
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
-}
-
-// Multer configuration for file uploads
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadsDir);
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + "-" + file.originalname);
-    },
-});
-const upload = multer({ storage: storage });
-
-// Serve uploaded files
-app.use("/uploads", express.static(uploadsDir));
 
 // API routes for Projects
 app.get("/api/projects", (req, res) => {
@@ -149,7 +124,7 @@ app.get("/api/projects", (req, res) => {
         console.log("Filtered projects:", filteredProjects.length, "items");
 
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items per page
+        const limit = parseInt(req.query.limit) || 10;
         const startIndex = (page - 1) * limit;
         const endIndex = page * limit;
 
@@ -167,7 +142,6 @@ app.get("/api/projects", (req, res) => {
 app.post(
     "/api/projects",
     authenticateJWT,
-    upload.single("image"),
     (req, res) => {
         const projectsFilePath = path.join(__dirname, "..", "projects.json");
         fs.readFile(projectsFilePath, "utf8", (err, data) => {
@@ -190,9 +164,6 @@ app.post(
                 }
             }
             const newProject = { id: Date.now(), ...req.body };
-            if (req.file) {
-                newProject.image = "/uploads/" + req.file.filename;
-            }
             projects.push(newProject);
             fs.writeFile(
                 path.join(__dirname, "..", "projects.json"),
@@ -215,7 +186,6 @@ app.post(
 app.put(
     "/api/projects/:id",
     authenticateJWT,
-    upload.single("image"),
     (req, res) => {
         const projectId = Number(req.params.id);
         const projectsFilePath = path.join(__dirname, "..", "projects.json");
@@ -245,9 +215,6 @@ app.put(
                     ...req.body,
                     id: projectId,
                 };
-                if (req.file) {
-                    updatedProject.image = "/uploads/" + req.file.filename;
-                }
                 projects[index] = updatedProject;
                 fs.writeFile(
                     path.join(__dirname, "..", "projects.json"),
@@ -341,7 +308,7 @@ app.get("/api/news", (req, res) => {
             });
 
             const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items per page
+            const limit = parseInt(req.query.limit) || 10;
             const startIndex = (page - 1) * limit;
             const endIndex = page * limit;
 
@@ -356,7 +323,6 @@ app.get("/api/news", (req, res) => {
     );
 });
 
-// API route for getting a single news item by ID
 app.get("/api/news/:id", (req, res) => {
     const newsId = Number(req.params.id);
     const newsFilePath = path.join(__dirname, "..", "news.json");
@@ -375,7 +341,6 @@ app.get("/api/news/:id", (req, res) => {
     });
 });
 
-// API for stats
 app.get("/api/stats", (req, res) => {
     const projectsFilePath = path.join(__dirname, "..", "projects.json");
     const newsFilePath = path.join(__dirname, "..", "news.json");
@@ -427,7 +392,7 @@ app.get("/api/stats", (req, res) => {
     });
 });
 
-app.post("/api/news", authenticateJWT, upload.single("image"), (req, res) => {
+app.post("/api/news", authenticateJWT, (req, res) => {
     fs.readFile(
         path.join(__dirname, "..", "news.json"),
         "utf8",
@@ -445,9 +410,6 @@ app.post("/api/news", authenticateJWT, upload.single("image"), (req, res) => {
                 dislikes: 0,
                 ...req.body,
             };
-            if (req.file) {
-                newNews.image = "/uploads/" + req.file.filename;
-            }
             news.push(newNews);
             fs.writeFile(
                 path.join(__dirname, "..", "news.json"),
@@ -468,7 +430,6 @@ app.post("/api/news", authenticateJWT, upload.single("image"), (req, res) => {
 app.put(
     "/api/news/:id",
     authenticateJWT,
-    upload.single("image"),
     (req, res) => {
         const newsId = Number(req.params.id);
         fs.readFile(
@@ -487,9 +448,6 @@ app.put(
                         ...req.body,
                         id: newsId,
                     };
-                    if (req.file) {
-                        updatedNews.image = "/uploads/" + req.file.filename;
-                    }
                     news[index] = updatedNews;
                     fs.writeFile(
                         path.join(__dirname, "..", "news.json"),
@@ -744,46 +702,6 @@ app.post("/api/news/:id/comments", (req, res) => {
                 };
                 news[newsIndex].comments.push(newComment);
 
-                // API route for contact form submission
-                app.post("/api/contact", async (req, res) => {
-                    const { name, email, subject, message } = req.body;
-
-                    if (!name || !email || !subject || !message) {
-                        return res.status(400).json({
-                            success: false,
-                            message: "لطفاً تمام فیلدهای فرم را پر کنید.",
-                        });
-                    }
-
-                    try {
-                        const mailOptions = {
-                            from: email, // Sender's email
-                            to: "vigigames2@gmail.com", // Recipient's email
-                            subject: `پیام جدید از فرم تماس: ${subject}`,
-                            html: `
-                <p><b>نام:</b> ${name}</p>
-                <p><b>ایمیل:</b> ${email}</p>
-                <p><b>موضوع:</b> ${subject}</p>
-                <p><b>پیام:</b></p>
-                <p>${message}</p>
-            `,
-                        };
-
-                        await transporter.sendMail(mailOptions);
-                        res.status(200).json({
-                            success: true,
-                            message: "پیام شما با موفقیت ارسال شد.",
-                        });
-                    } catch (error) {
-                        console.error("Error sending contact email:", error);
-                        res.status(500).json({
-                            success: false,
-                            message:
-                                "خطا در ارسال پیام. لطفاً بعداً دوباره امتحان کنید.",
-                        });
-                    }
-                });
-
                 fs.writeFile(
                     path.join(__dirname, "..", "news.json"),
                     JSON.stringify(news, null, 2),
@@ -834,7 +752,6 @@ app.post("/api/login", async (req, res) => {
 });
 
 // API route for Contact Form Submissions
-// API route for contact form submission
 app.post("/api/contact", async (req, res) => {
     const { name, email, subject, message } = req.body;
 

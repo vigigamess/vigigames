@@ -142,23 +142,7 @@ const searchInput = document.getElementById('search-input');
 const filterBtns = document.querySelectorAll('.filter-btn');
 const scrollTopBtn = document.getElementById('scroll-top');
 
-// File Input Handler
-const fileInput = document.getElementById('project-image');
-const fileBtnText = document.querySelector('.file-upload-btn');
-
-fileInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-        fileBtnText.innerHTML = `<i class="fa-solid fa-check"></i> ${e.target.files[0].name}`;
-        fileBtnText.style.color = 'var(--primary)';
-    }
-});
-
-newsImageInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-        newsFileBtnText.innerHTML = `<i class="fa-solid fa-check"></i> ${e.target.files[0].name}`;
-        newsFileBtnText.style.color = 'var(--primary)';
-    }
-});
+// File Input Handler Removed - Now using URL inputs
 
 // Initial Render & Animations
 document.addEventListener('DOMContentLoaded', async () => { // Make it async
@@ -497,8 +481,6 @@ window.showProjectForm = function() {
     document.getElementById('project-desc').value = '';
     document.getElementById('project-status').value = 'in-progress';
     document.getElementById('project-image').value = ''; 
-    fileBtnText.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> انتخاب تصویر';
-    fileBtnText.style.color = 'var(--text-muted)';
 }
 
 window.showNewsForm = function() {
@@ -512,8 +494,6 @@ window.showNewsForm = function() {
     document.getElementById('news-title').value = '';
     document.getElementById('news-content').value = '';
     document.getElementById('news-image').value = '';
-    newsFileBtnText.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> انتخاب تصویر';
-    newsFileBtnText.style.color = 'var(--text-muted)';
 }
 
 // Form Submission
@@ -524,23 +504,23 @@ projectForm.addEventListener('submit', async (e) => {
     const title = document.getElementById('project-title').value;
     const desc = tinymce.get('project-desc').getContent(); // Get content from TinyMCE
     const status = document.getElementById('project-status').value;
-    const imageInput = document.getElementById('project-image');
+    const image = document.getElementById('project-image').value;
     
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('desc', desc);
-    formData.append('status', status);
+    const projectData = {
+        title,
+        desc,
+        status,
+        image
+    };
+    
     if (id) {
-        formData.append('id', id);
-    }
-    if (imageInput.files && imageInput.files[0]) {
-        formData.append('image', imageInput.files[0]);
+        projectData.id = id;
     }
 
-    await saveProjectData(id, formData);
+    await saveProjectData(id, projectData);
 });
 
-async function saveProjectData(id, formData) {
+async function saveProjectData(id, data) {
     const jwtToken = sessionStorage.getItem('vigigames_jwt');
     const method = id ? 'PUT' : 'POST';
     const url = id ? `/api/projects/${id}` : '/api/projects';
@@ -549,9 +529,10 @@ async function saveProjectData(id, formData) {
         const response = await fetch(url, {
             method: method,
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': jwtToken ? `Bearer ${jwtToken}` : ''
             },
-            body: formData // FormData will automatically set Content-Type: multipart/form-data
+            body: JSON.stringify(data)
         });
 
         if (!response.ok) {
@@ -582,22 +563,22 @@ newsForm.addEventListener('submit', async (e) => {
     const id = document.getElementById('news-id').value;
     const title = document.getElementById('news-title').value;
     const content = tinymce.get('news-content').getContent(); // Get content from TinyMCE
-    const imageInput = document.getElementById('news-image');
+    const image = document.getElementById('news-image').value;
     
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('content', content);
+    const newsData = {
+        title,
+        content,
+        image
+    };
+
     if (id) {
-        formData.append('id', id);
-    }
-    if (imageInput.files && imageInput.files[0]) {
-        formData.append('image', imageInput.files[0]);
+        newsData.id = id;
     }
 
-    await saveNewsData(id, formData);
+    await saveNewsData(id, newsData);
 });
 
-async function saveNewsData(id, formData) {
+async function saveNewsData(id, data) {
     const jwtToken = sessionStorage.getItem('vigigames_jwt');
     const method = id ? 'PUT' : 'POST';
     const url = id ? `/api/news/${id}` : '/api/news';
@@ -606,9 +587,10 @@ async function saveNewsData(id, formData) {
         const response = await fetch(url, {
             method: method,
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': jwtToken ? `Bearer ${jwtToken}` : ''
             },
-            body: formData // FormData will automatically set Content-Type: multipart/form-data
+            body: JSON.stringify(data)
         });
 
         if (!response.ok) {
@@ -767,10 +749,8 @@ window.editProject = function(id) {
         document.getElementById('project-title').value = project.title;
         document.getElementById('project-desc').value = project.desc;
         document.getElementById('project-status').value = project.status;
-        // For image, we don't pre-fill file input for security reasons
-        // We can show current image if needed, but not set the input value
-        fileBtnText.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> انتخاب تصویر (تصویر فعلی حفظ می‌شود)';
-        fileBtnText.style.color = 'var(--text-muted)';
+        document.getElementById('project-image').value = project.image || ''; 
+        
         adminModal.classList.add('active');
     }
 };
@@ -895,9 +875,8 @@ window.editNews = function(id) {
         document.getElementById('news-id').value = newsItem.id;
         document.getElementById('news-title').value = newsItem.title;
         document.getElementById('news-content').value = newsItem.content;
-        // For image, we don't pre-fill file input for security reasons
-        newsFileBtnText.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> انتخاب تصویر (تصویر فعلی حفظ می‌شود)';
-        newsFileBtnText.style.color = 'var(--text-muted)';
+        document.getElementById('news-image').value = newsItem.image || '';
+        
         adminModal.classList.add('active');
     }
 };
@@ -931,40 +910,7 @@ window.deleteNews = async function(id) {
     }
 };
 
-// Edit Project
-window.editProject = function(id) {
-    const project = projects.find(p => p.id == id);
-    if (!project) return;
 
-    document.getElementById('project-id').value = project.id;
-    document.getElementById('project-title').value = project.title;
-    document.getElementById('project-desc').value = project.desc;
-    document.getElementById('project-status').value = project.status;
-    document.getElementById('modal-title').textContent = 'ویرایش پروژه';
-    
-    // Reset file input visual
-    fileBtnText.innerHTML = '<i class="fa-solid fa-image"></i> تصویر فعلی حفظ می‌شود';
-    fileBtnText.style.color = 'var(--text-muted)';
-    
-    adminModal.classList.add('active');
-}
-
-// Edit News
-window.editNews = function(id) {
-    const newsItem = news.find(n => n.id == id);
-    if (!newsItem) return;
-
-    document.getElementById('news-id').value = newsItem.id;
-    document.getElementById('news-title').value = newsItem.title;
-    document.getElementById('news-content').value = newsItem.content;
-    document.getElementById('news-modal-title').textContent = 'ویرایش خبر';
-    document.getElementById('news-modal-title').style.display = 'block';
-    
-    newsFileBtnText.innerHTML = '<i class="fa-solid fa-image"></i> تصویر فعلی حفظ می‌شود';
-    newsFileBtnText.style.color = 'var(--text-muted)';
-    
-    adminModal.classList.add('active');
-}
 
 
 
