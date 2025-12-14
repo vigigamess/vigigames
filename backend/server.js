@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const app = express();
-const PORT = 5000;
+const PORT = 3000;
 
 // Stored hashed password (replace with a strong, securely generated hash in a real application)
 const ADMIN_PASSWORD_HASH = '2f6a74f14825e59f858c5fcf40e68d2a8fa83532a1cda7e02e54fcb606d40cbe'; // SHA-256 hash of 'Vigigames_S3cur3P@ss!'
@@ -36,7 +36,7 @@ async function hashPassword(password) {
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use(cors({
-    origin: true,
+    origin: 'http://localhost:3000', // Allow requests from your frontend origin
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 })); // Enable CORS for all routes
@@ -649,6 +649,6 @@ app.post('/api/contact', async (req, res) => {
 });
 
 // Start the server
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
 });
