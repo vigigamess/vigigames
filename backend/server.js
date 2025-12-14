@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const app = express();
-const PORT = 5000;
+
 
 // Stored hashed password (replace with a strong, securely generated hash in a real application)
 const ADMIN_PASSWORD_HASH =
@@ -36,9 +36,6 @@ async function hashPassword(password) {
 
 // Middleware to parse JSON bodies
 app.use(express.json());
-<<<<<<< HEAD
-app.use(cors());
-=======
 app.use(
     cors({
         origin: true,
@@ -46,7 +43,6 @@ app.use(
         allowedHeaders: ["Content-Type", "Authorization"],
     }),
 ); // Enable CORS for all routes
->>>>>>> c4d07b978eea6e8ae465efd23266610270e39676
 
 // Middleware for JWT authentication
 const authenticateJWT = (req, res, next) => {
@@ -72,14 +68,10 @@ const authenticateJWT = (req, res, next) => {
 };
 
 app.use((req, res, next) => {
-<<<<<<< HEAD
-    // res.setHeader('Content-Security-Policy', "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tiny.cloud https://unpkg.com https://cdnjs.cloudflare.com https://sp.tinymce.com; connect-src 'self' https://cdn.tiny.cloud https://sp.tinymce.com https://cdnjs.cloudflare.com https://6c6dd505-6a11-48a5-91ab-3803211384fb-00-3fllc2bfwra4u.worf.replit.dev; img-src 'self' data: https://cdn.tiny.cloud https://raw.githubusercontent.com https://images.unsplash.com https://sp.tinymce.com");
-=======
     res.setHeader(
         "Content-Security-Policy",
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tiny.cloud https://unpkg.com https://cdnjs.cloudflare.com https://sp.tinymce.com; connect-src 'self' https://cdn.tiny.cloud https://sp.tinymce.com https://cdnjs.cloudflare.com https://6c6dd505-6a11-48a5-91ab-380321138fb-00-3fllc2bfwra4u.worf.replit.dev; img-src 'self' data: https://cdn.tiny.cloud https://raw.githubusercontent.com https://images.unsplash.com https://sp.tinymce.com",
     );
->>>>>>> c4d07b978eea6e8ae465efd23266610270e39676
     next();
 });
 
