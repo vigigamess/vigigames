@@ -58,7 +58,7 @@ function initializeVisitorCounter() {
 
 
 // Function to fetch projects from projects.json
-const BASE_URL = 'https://vigigames2-vigigames.replit.dev';
+const BASE_URL = 'https://6c6dd505-6a11-48a5-91ab-380321138fb-00-3fllc2bfwra4u.worf.replit.dev';
 
 async function fetchProjects(page = currentProjectPage, limit = projectsPerPage, searchTerm = '', statusFilter = '') {
     try {
@@ -427,7 +427,7 @@ window.deleteProject = async function(id) {
     }
 
     try {
-        const response = await fetch(`/api/projects/${id}`, {
+        const response = await fetch(`${BASE_URL}/api/projects/${id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
