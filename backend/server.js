@@ -8,7 +8,7 @@ const nodemailer = require("nodemailer");
 const mongoose = require('mongoose');
 
 // Replace with your MongoDB Atlas connection string
-const DB_CONNECTION_STRING = 'mongodb+srv://vigigames2_db_user:ali13822M@vigigames-org-20.mongodb.net/vigigames_db?retryWrites=true&w=majority';
+const DB_CONNECTION_STRING = process.env.DB_CONNECTION_STRING;
 
 mongoose.connect(DB_CONNECTION_STRING, {
     useNewUrlParser: true,
@@ -17,7 +17,7 @@ mongoose.connect(DB_CONNECTION_STRING, {
 .then(() => console.log('Connected to MongoDB Atlas'))
 .catch(err => console.error('Error connecting to MongoDB Atlas:', err));
 
-const JWT_SECRET = "mysecretkey";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const projectSchema = new mongoose.Schema({
     title: { type: String, required: true },
