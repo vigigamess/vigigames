@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 5000;
 
 // Stored hashed password (replace with a strong, securely generated hash in a real application)
 const ADMIN_PASSWORD_HASH = '2f6a74f14825e59f858c5fcf40e68d2a8fa83532a1cda7e02e54fcb606d40cbe'; // SHA-256 hash of 'Vigigames_S3cur3P@ss!'
@@ -35,11 +35,7 @@ async function hashPassword(password) {
 
 // Middleware to parse JSON bodies
 app.use(express.json());
-app.use(cors({
-    origin: 'http://localhost:3000', // Allow requests from your frontend origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-})); // Enable CORS for all routes
+app.use(cors());
 
 // Middleware for JWT authentication
 const authenticateJWT = (req, res, next) => {
@@ -65,7 +61,7 @@ const authenticateJWT = (req, res, next) => {
     };
 
 app.use((req, res, next) => {
-    res.setHeader('Content-Security-Policy', "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tiny.cloud https://unpkg.com https://cdnjs.cloudflare.com https://sp.tinymce.com; connect-src 'self' https://cdn.tiny.cloud https://sp.tinymce.com https://cdnjs.cloudflare.com; img-src 'self' data: https://cdn.tiny.cloud https://raw.githubusercontent.com https://images.unsplash.com https://sp.tinymce.com");
+    // res.setHeader('Content-Security-Policy', "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tiny.cloud https://unpkg.com https://cdnjs.cloudflare.com https://sp.tinymce.com; connect-src 'self' https://cdn.tiny.cloud https://sp.tinymce.com https://cdnjs.cloudflare.com https://6c6dd505-6a11-48a5-91ab-3803211384fb-00-3fllc2bfwra4u.worf.replit.dev; img-src 'self' data: https://cdn.tiny.cloud https://raw.githubusercontent.com https://images.unsplash.com https://sp.tinymce.com");
     next();
 });
 
@@ -648,7 +644,4 @@ app.post('/api/contact', async (req, res) => {
     }
 });
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+module.exports = app;

@@ -59,7 +59,6 @@ function initializeVisitorCounter() {
 
 // Function to fetch projects from projects.json
 const BASE_URL = 'https://6c6dd505-6a11-48a5-91ab-380321138fb-00-3fllc2bfwra4u.worf.replit.dev';
-
 async function fetchProjects(page = currentProjectPage, limit = projectsPerPage, searchTerm = '', statusFilter = '') {
     try {
         const response = await fetch(`${BASE_URL}/api/projects?page=${page}&limit=${limit}&searchTerm=${searchTerm}&statusFilter=${statusFilter}`);
