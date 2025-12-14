@@ -88,7 +88,7 @@ const authenticateJWT = (req, res, next) => {
         console.log("Auth Header:", authHeader);
         console.log("Token:", token);
 
-        jwt.verify(token, "mysecretkey", (err, user) => {
+        jwt.verify(token, JWT_SECRET, (err, user) => {
             console.log("JWT_SECRET used for verification:", JWT_SECRET);
             if (err) {
                 console.error("JWT Verification Error:", err);
