@@ -5,8 +5,48 @@ const cors = require("cors");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const mongoose = require('mongoose');
+
+// Replace with your MongoDB Atlas connection string
+const DB_CONNECTION_STRING = 'mongodb+srv://vigigames2_db_user:ali13822M@vigigames-org-20.mongodb.net/vigigames_db?retryWrites=true&w=majority';
+
+mongoose.connect(DB_CONNECTION_STRING, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log('Connected to MongoDB Atlas'))
+.catch(err => console.error('Error connecting to MongoDB Atlas:', err));
 
 const JWT_SECRET = "mysecretkey";
+
+const projectSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    image: { type: String, required: true },
+    description: { type: String, required: true },
+    status: { type: String, enum: ['completed', 'in-progress', 'cancelled'], default: 'in-progress' },
+    link: { type: String },
+    github: { type: String },
+    tags: [{ type: String }]
+});
+
+const Project = mongoose.model('Project', projectSchema);
+
+const newsSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    image: { type: String, required: true },
+    content: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+    comments: [{
+        author: { type: String, required: true },
+        text: { type: String, required: true },
+        approved: { type: Boolean, default: false },
+        createdAt: { type: Date, default: Date.now }
+    }],
+    likes: { type: Number, default: 0 },
+    dislikes: { type: Number, default: 0 }
+});
+
+const News = mongoose.model('News', newsSchema);
 
 // Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
@@ -73,493 +113,247 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, "..")));
 
 // API routes for Projects
-app.get("/api/projects", (req, res) => {
-    const projectsFilePath = path.join(__dirname, "..", "projects.json");
-    fs.readFile(projectsFilePath, "utf8", (err, data) => {
-        console.log(
-            "Reading projects.json. Error:",
-            err,
-            "Data length:",
-            data ? data.length : 0,
-        );
-        let projects = [];
-        if (err) {
-            if (err.code === "ENOENT") {
-                console.log("projects.json not found, returning empty array.");
-            } else {
-                console.error("Error reading projects.json:", err);
-                return res.status(500).send("Error reading projects data");
-            }
-        } else {
-            try {
-                projects = JSON.parse(data);
-                console.log(
-                    "Projects after JSON.parse:",
-                    projects.length,
-                    "items",
-                );
-            } catch (parseError) {
-                console.error("Error parsing projects.json:", parseError);
-                return res.status(500).send("Error parsing projects data");
-            }
-        }
-
+app.get("/api/projects", async (req, res) => {
+    try {
         const searchTerm = req.query.searchTerm
             ? req.query.searchTerm.toLowerCase()
             : "";
         const statusFilter = req.query.statusFilter || "";
-        console.log("Search Term:", searchTerm, "Status Filter:", statusFilter);
 
-        let filteredProjects = projects.filter((project) => {
-            const matchesSearchTerm =
-                searchTerm === "" ||
-                (project.title &&
-                    project.title.toLowerCase().includes(searchTerm)) ||
-                (project.description &&
-                    project.description.toLowerCase().includes(searchTerm));
-            const matchesStatusFilter =
-                statusFilter === "all" || project.status === statusFilter;
-            return matchesSearchTerm && matchesStatusFilter;
-        });
-        console.log("Filtered projects:", filteredProjects.length, "items");
+        let query = {};
+        if (searchTerm) {
+            query.$or = [
+                { title: { $regex: searchTerm, $options: "i" } },
+                { description: { $regex: searchTerm, $options: "i" } },
+            ];
+        }
+        if (statusFilter && statusFilter !== "all") {
+            query.status = statusFilter;
+        }
 
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const startIndex = (page - 1) * limit;
-        const endIndex = page * limit;
+        const skip = (page - 1) * limit;
 
-        const results = {};
-        results.totalItems = filteredProjects.length;
-        results.totalPages = Math.ceil(filteredProjects.length / limit);
-        results.currentPage = page;
-        results.items = filteredProjects.slice(startIndex, endIndex);
-        console.log("Results sent to frontend:", results.items.length, "items");
+        const totalItems = await Project.countDocuments(query);
+        const projects = await Project.find(query)
+            .skip(skip)
+            .limit(limit);
 
-        res.json(results);
-    });
+        const totalPages = Math.ceil(totalItems / limit);
+
+        res.json({
+            totalItems,
+            totalPages,
+            currentPage: page,
+            items: projects,
+        });
+    } catch (error) {
+        console.error("Error fetching projects:", error);
+        res.status(500).send("Error fetching projects data");
+    }
 });
 
 app.post(
     "/api/projects",
     authenticateJWT,
-    (req, res) => {
-        const projectsFilePath = path.join(__dirname, "..", "projects.json");
-        fs.readFile(projectsFilePath, "utf8", (err, data) => {
-            let projects = [];
-            if (err) {
-                if (err.code === "ENOENT") {
-                    console.log(
-                        "projects.json not found, initializing with empty array.",
-                    );
-                } else {
-                    console.error("Error reading projects.json:", err);
-                    return res.status(500).send("Error reading projects data");
-                }
-            } else {
-                try {
-                    projects = JSON.parse(data);
-                } catch (parseError) {
-                    console.error("Error parsing projects.json:", parseError);
-                    return res.status(500).send("Error parsing projects data");
-                }
-            }
-            const newProject = { id: Date.now(), ...req.body };
-            projects.push(newProject);
-            fs.writeFile(
-                path.join(__dirname, "..", "projects.json"),
-                JSON.stringify(projects, null, 2),
-                "utf8",
-                (err) => {
-                    if (err) {
-                        console.error("Error writing projects.json:", err);
-                        return res
-                            .status(500)
-                            .send("Error saving project data");
-                    }
-                    res.status(201).json(projects);
-                },
-            );
-        });
+    async (req, res) => {
+        try {
+            const newProject = new Project(req.body);
+            await newProject.save();
+            res.status(201).json(newProject);
+        } catch (error) {
+            console.error("Error creating project:", error);
+            res.status(500).send("Error creating project");
+        }
     },
 );
 
 app.put(
     "/api/projects/:id",
     authenticateJWT,
-    (req, res) => {
-        const projectId = Number(req.params.id);
-        const projectsFilePath = path.join(__dirname, "..", "projects.json");
-        fs.readFile(projectsFilePath, "utf8", (err, data) => {
-            let projects = [];
-            if (err) {
-                if (err.code === "ENOENT") {
-                    console.log(
-                        "projects.json not found for PUT, initializing with empty array.",
-                    );
-                } else {
-                    console.error("Error reading projects.json:", err);
-                    return res.status(500).send("Error reading projects data");
-                }
-            } else {
-                try {
-                    projects = JSON.parse(data);
-                } catch (parseError) {
-                    console.error("Error parsing projects.json:", parseError);
-                    return res.status(500).send("Error parsing projects data");
-                }
+    async (req, res) => {
+        try {
+            const projectId = req.params.id;
+            const updatedProject = await Project.findByIdAndUpdate(projectId, req.body, { new: true });
+            if (!updatedProject) {
+                return res.status(404).send("Project not found");
             }
-            const index = projects.findIndex((p) => p.id === projectId);
-            if (index !== -1) {
-                const updatedProject = {
-                    ...projects[index],
-                    ...req.body,
-                    id: projectId,
-                };
-                projects[index] = updatedProject;
-                fs.writeFile(
-                    path.join(__dirname, "..", "projects.json"),
-                    JSON.stringify(projects, null, 2),
-                    "utf8",
-                    (err) => {
-                        if (err) {
-                            console.error("Error writing projects.json:", err);
-                            return res
-                                .status(500)
-                                .send("Error saving project data");
-                        }
-                        res.json(projects);
-                    },
-                );
-            } else {
-                res.status(404).send("Project not found");
-            }
-        });
+            res.json(updatedProject);
+        } catch (error) {
+            console.error("Error updating project:", error);
+            res.status(500).send("Error updating project");
+        }
     },
 );
 
-app.delete("/api/projects/:id", authenticateJWT, (req, res) => {
-    const projectId = Number(req.params.id);
-    const projectsFilePath = path.join(__dirname, "..", "projects.json");
-    fs.readFile(projectsFilePath, "utf8", (err, data) => {
-        let projects = [];
-        if (err) {
-            if (err.code === "ENOENT") {
-                console.log(
-                    "projects.json not found for DELETE, returning empty array.",
-                );
-                return res.status(404).send("Project not found");
-            } else {
-                console.error("Error reading projects.json:", err);
-                return res.status(500).send("Error reading projects data");
-            }
-        } else {
-            try {
-                projects = JSON.parse(data);
-            } catch (parseError) {
-                console.error("Error parsing projects.json:", parseError);
-                return res.status(500).send("Error parsing projects data");
-            }
+app.delete("/api/projects/:id", authenticateJWT, async (req, res) => {
+    try {
+        const projectId = req.params.id;
+        const deletedProject = await Project.findByIdAndDelete(projectId);
+        if (!deletedProject) {
+            return res.status(404).send("Project not found");
         }
-        const initialLength = projects.length;
-        projects = projects.filter((p) => p.id !== projectId);
-        if (projects.length < initialLength) {
-            fs.writeFile(
-                path.join(__dirname, "..", "projects.json"),
-                JSON.stringify(projects, null, 2),
-                "utf8",
-                (err) => {
-                    if (err) {
-                        console.error("Error writing projects.json:", err);
-                        return res
-                            .status(500)
-                            .send("Error deleting project data");
-                    }
-                    res.status(200).json(projects);
-                },
-            );
-        } else {
-            res.status(404).send("Project not found");
-        }
-    });
+        res.status(200).json({ message: "Project deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting project:", error);
+        res.status(500).send("Error deleting project");
+    }
 });
 
 // API routes for News
-app.get("/api/news", (req, res) => {
-    fs.readFile(
-        path.join(__dirname, "..", "news.json"),
-        "utf8",
-        (err, data) => {
-            if (err) {
-                console.error("Error reading news.json:", err);
-                return res.status(500).send("Error reading news data");
-            }
-            let news = JSON.parse(data);
+app.get("/api/news", async (req, res) => {
+    try {
+        const searchTerm = req.query.searchTerm
+            ? req.query.searchTerm.toLowerCase()
+            : "";
 
-            const searchTerm = req.query.searchTerm
-                ? req.query.searchTerm.toLowerCase()
-                : "";
-
-            let filteredNews = news.filter((item) => {
-                const matchesSearchTerm =
-                    searchTerm === "" ||
-                    item.title.toLowerCase().includes(searchTerm) ||
-                    item.content.toLowerCase().includes(searchTerm);
-                return matchesSearchTerm;
-            });
-
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 10;
-            const startIndex = (page - 1) * limit;
-            const endIndex = page * limit;
-
-            const results = {};
-            results.totalItems = filteredNews.length;
-            results.totalPages = Math.ceil(filteredNews.length / limit);
-            results.currentPage = page;
-            results.items = filteredNews.slice(startIndex, endIndex);
-
-            res.json(results);
-        },
-    );
-});
-
-app.get("/api/news/:id", (req, res) => {
-    const newsId = Number(req.params.id);
-    const newsFilePath = path.join(__dirname, "..", "news.json");
-    fs.readFile(newsFilePath, "utf8", (err, data) => {
-        if (err) {
-            console.error("Error reading news.json:", err);
-            return res.status(500).send("Error reading news data");
-        }
-        const news = JSON.parse(data);
-        const newsItem = news.find((n) => n.id === newsId);
-        if (newsItem) {
-            res.json(newsItem);
-        } else {
-            res.status(404).send("News not found");
-        }
-    });
-});
-
-app.get("/api/stats", (req, res) => {
-    const projectsFilePath = path.join(__dirname, "..", "projects.json");
-    const newsFilePath = path.join(__dirname, "..", "news.json");
-
-    let stats = {
-        completedProjects: 0,
-        inProgressProjects: 0,
-        cancelledProjects: 0,
-        totalNews: 0,
-    };
-
-    fs.readFile(projectsFilePath, "utf8", (err, projectsData) => {
-        let projects = [];
-        if (!err && projectsData) {
-            try {
-                projects = JSON.parse(projectsData);
-                stats.completedProjects = projects.filter(
-                    (p) => p.status === "completed",
-                ).length;
-                stats.inProgressProjects = projects.filter(
-                    (p) => p.status === "in-progress",
-                ).length;
-                stats.cancelledProjects = projects.filter(
-                    (p) => p.status === "cancelled",
-                ).length;
-            } catch (parseError) {
-                console.error(
-                    "Error parsing projects.json for stats:",
-                    parseError,
-                );
-            }
+        let query = {};
+        if (searchTerm) {
+            query.$or = [
+                { title: { $regex: searchTerm, $options: "i" } },
+                { content: { $regex: searchTerm, $options: "i" } },
+            ];
         }
 
-        fs.readFile(newsFilePath, "utf8", (err, newsData) => {
-            let news = [];
-            if (!err && newsData) {
-                try {
-                    news = JSON.parse(newsData);
-                    stats.totalNews = news.length;
-                } catch (parseError) {
-                    console.error(
-                        "Error parsing news.json for stats:",
-                        parseError,
-                    );
-                }
-            }
-            res.json(stats);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const totalItems = await News.countDocuments(query);
+        const news = await News.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalPages = Math.ceil(totalItems / limit);
+
+        res.json({
+            totalItems,
+            totalPages,
+            currentPage: page,
+            items: news,
         });
-    });
+    } catch (error) {
+        console.error("Error fetching news:", error);
+        res.status(500).send("Error fetching news data");
+    }
 });
 
-app.post("/api/news", authenticateJWT, (req, res) => {
-    fs.readFile(
-        path.join(__dirname, "..", "news.json"),
-        "utf8",
-        (err, data) => {
-            if (err) {
-                console.error("Error reading news.json:", err);
-                return res.status(500).send("Error reading news data");
-            }
-            const news = JSON.parse(data);
-            const newNews = {
-                id: Date.now(),
-                createdAt: new Date().toISOString(),
-                comments: [],
-                likes: 0,
-                dislikes: 0,
-                ...req.body,
-            };
-            news.push(newNews);
-            fs.writeFile(
-                path.join(__dirname, "..", "news.json"),
-                JSON.stringify(news, null, 2),
-                "utf8",
-                (err) => {
-                    if (err) {
-                        console.error("Error writing news.json:", err);
-                        return res.status(500).send("Error saving news data");
-                    }
-                    res.status(201).json(news);
-                },
-            );
-        },
-    );
+app.get("/api/news/:id", async (req, res) => {
+    try {
+        const newsId = req.params.id;
+        const newsItem = await News.findById(newsId);
+        if (!newsItem) {
+            return res.status(404).send("News not found");
+        }
+        res.json(newsItem);
+    } catch (error) {
+        console.error("Error fetching news item:", error);
+        res.status(500).send("Error fetching news item");
+    }
+});
+
+app.get("/api/stats", async (req, res) => {
+    try {
+        const completedProjects = await Project.countDocuments({ status: "completed" });
+        const inProgressProjects = await Project.countDocuments({ status: "in-progress" });
+        const cancelledProjects = await Project.countDocuments({ status: "cancelled" });
+        const totalNews = await News.countDocuments();
+
+        res.json({
+            completedProjects,
+            inProgressProjects,
+            cancelledProjects,
+            totalNews,
+        });
+    } catch (error) {
+        console.error("Error fetching stats:", error);
+        res.status(500).send("Error fetching stats data");
+    }
+});
+
+app.post("/api/news", authenticateJWT, async (req, res) => {
+    try {
+        const newNews = new News({
+            ...req.body,
+            createdAt: new Date().toISOString(),
+        });
+        await newNews.save();
+        res.status(201).json(newNews);
+    } catch (error) {
+        console.error("Error creating news:", error);
+        res.status(500).send("Error creating news");
+    }
 });
 
 app.put(
     "/api/news/:id",
     authenticateJWT,
-    (req, res) => {
-        const newsId = Number(req.params.id);
-        fs.readFile(
-            path.join(__dirname, "..", "news.json"),
-            "utf8",
-            (err, data) => {
-                if (err) {
-                    console.error("Error reading news.json:", err);
-                    return res.status(500).send("Error reading news data");
-                }
-                let news = JSON.parse(data);
-                const index = news.findIndex((n) => n.id === newsId);
-                if (index !== -1) {
-                    const updatedNews = {
-                        ...news[index],
-                        ...req.body,
-                        id: newsId,
-                    };
-                    news[index] = updatedNews;
-                    fs.writeFile(
-                        path.join(__dirname, "..", "news.json"),
-                        JSON.stringify(news, null, 2),
-                        "utf8",
-                        (err) => {
-                            if (err) {
-                                console.error("Error writing news.json:", err);
-                                return res
-                                    .status(500)
-                                    .send("Error saving news data");
-                            }
-                            res.json(news);
-                        },
-                    );
-                } else {
-                    res.status(404).send("News not found");
-                }
-            },
-        );
+    async (req, res) => {
+        try {
+            const newsId = req.params.id;
+            const updatedNews = await News.findByIdAndUpdate(newsId, req.body, { new: true });
+            if (!updatedNews) {
+                return res.status(404).send("News not found");
+            }
+            res.json(updatedNews);
+        } catch (error) {
+            console.error("Error updating news:", error);
+            res.status(500).send("Error updating news");
+        }
     },
 );
 
 // API route for liking a news item
-app.post("/api/news/:id/like", (req, res) => {
-    const newsId = Number(req.params.id);
-
-    fs.readFile(
-        path.join(__dirname, "..", "news.json"),
-        "utf8",
-        (err, data) => {
-            if (err) {
-                console.error("Error reading news.json:", err);
-                return res.status(500).send("Error reading news data");
-            }
-            let news = JSON.parse(data);
-            const newsIndex = news.findIndex((n) => n.id === newsId);
-
-            if (newsIndex !== -1) {
-                news[newsIndex].likes = (news[newsIndex].likes || 0) + 1;
-
-                fs.writeFile(
-                    path.join(__dirname, "..", "news.json"),
-                    JSON.stringify(news, null, 2),
-                    "utf8",
-                    (err) => {
-                        if (err) {
-                            console.error("Error writing news.json:", err);
-                            return res.status(500).send("Error saving like");
-                        }
-                        res.status(200).json({
-                            success: true,
-                            message: "خبر لایک شد.",
-                            likes: news[newsIndex].likes,
-                        });
-                    },
-                );
-            } else {
-                res.status(404).send("News not found");
-            }
-        },
-    );
+app.post("/api/news/:id/like", async (req, res) => {
+    try {
+        const newsId = req.params.id;
+        const newsItem = await News.findById(newsId);
+        if (!newsItem) {
+            return res.status(404).send("News not found");
+        }
+        newsItem.likes = (newsItem.likes || 0) + 1;
+        await newsItem.save();
+        res.status(200).json({
+            success: true,
+            message: "خبر لایک شد.",
+            likes: newsItem.likes,
+        });
+    } catch (error) {
+        console.error("Error liking news item:", error);
+        res.status(500).send("Error liking news item");
+    }
 });
 
 // API route for disliking a news item
-app.post("/api/news/:id/dislike", (req, res) => {
-    const newsId = Number(req.params.id);
-
-    fs.readFile(
-        path.join(__dirname, "..", "news.json"),
-        "utf8",
-        (err, data) => {
-            if (err) {
-                console.error("Error reading news.json:", err);
-                return res.status(500).send("Error reading news data");
-            }
-            let news = JSON.parse(data);
-            const newsIndex = news.findIndex((n) => n.id === newsId);
-
-            if (newsIndex !== -1) {
-                news[newsIndex].dislikes = (news[newsIndex].dislikes || 0) + 1;
-
-                fs.writeFile(
-                    path.join(__dirname, "..", "news.json"),
-                    JSON.stringify(news, null, 2),
-                    "utf8",
-                    (err) => {
-                        if (err) {
-                            console.error("Error writing news.json:", err);
-                            return res.status(500).send("Error saving dislike");
-                        }
-                        res.status(200).json({
-                            success: true,
-                            message: "خبر دیس‌لایک شد.",
-                            dislikes: news[newsIndex].dislikes,
-                        });
-                    },
-                );
-            } else {
-                res.status(404).send("News not found");
-            }
-        },
-    );
+app.post("/api/news/:id/dislike", async (req, res) => {
+    try {
+        const newsId = req.params.id;
+        const newsItem = await News.findById(newsId);
+        if (!newsItem) {
+            return res.status(404).send("News not found");
+        }
+        newsItem.dislikes = (newsItem.dislikes || 0) + 1;
+        await newsItem.save();
+        res.status(200).json({
+            success: true,
+            message: "خبر دیس‌لایک شد.",
+            dislikes: newsItem.dislikes,
+        });
+    } catch (error) {
+        console.error("Error disliking news item:", error);
+        res.status(500).send("Error disliking news item");
+    }
 });
 
 // API route for approving/rejecting a comment
 app.put(
     "/api/news/:newsId/comments/:commentId/approve",
     authenticateJWT,
-    (req, res) => {
-        const newsId = Number(req.params.newsId);
-        const commentId = Number(req.params.commentId);
+    async (req, res) => {
+        const newsId = req.params.newsId;
+        const commentId = req.params.commentId;
         const { approved } = req.body;
 
         if (typeof approved !== "boolean") {
@@ -569,14 +363,26 @@ app.put(
             });
         }
 
-        fs.readFile(
-            path.join(__dirname, "..", "news.json"),
-            "utf8",
-            (err, data) => {
-                if (err) {
-                    console.error("Error reading news.json:", err);
-                    return res.status(500).send("Error reading news data");
-                }
+        try {
+            const newsItem = await News.findById(newsId);
+            if (!newsItem) {
+                return res.status(404).json({ success: false, message: "خبر یافت نشد." });
+            }
+
+            const comment = newsItem.comments.id(commentId);
+            if (!comment) {
+                return res.status(404).json({ success: false, message: "کامنت یافت نشد." });
+            }
+
+            comment.approved = approved;
+            await newsItem.save();
+            res.status(200).json({ success: true, message: "وضعیت کامنت با موفقیت به‌روزرسانی شد." });
+        } catch (error) {
+            console.error("Error updating comment approval status:", error);
+            res.status(500).json({ success: false, message: "خطا در به‌روزرسانی وضعیت کامنت." });
+        }
+    },
+);                }
                 let news = JSON.parse(data);
                 const newsIndex = news.findIndex((n) => n.id === newsId);
 
@@ -623,53 +429,29 @@ app.put(
     },
 );
 
-app.delete("/api/news/:id", authenticateJWT, (req, res) => {
-    const newsId = Number(req.params.id);
-    fs.readFile(
-        path.join(__dirname, "..", "news.json"),
-        "utf8",
-        (err, data) => {
-            if (err) {
-                console.error("Error reading news.json:", err);
-                return res.status(500).send("Error reading news data");
-            }
-            let news = JSON.parse(data);
-            const initialLength = news.length;
-            news = news.filter((n) => n.id !== newsId);
-            if (news.length < initialLength) {
-                console.log(
-                    `News item with ID ${newsId} deleted. Remaining news count: ${news.length}`,
-                );
-                fs.writeFile(
-                    path.join(__dirname, "..", "news.json"),
-                    JSON.stringify(news, null, 2),
-                    "utf8",
-                    (err) => {
-                        if (err) {
-                            console.error("Error writing news.json:", err);
-                            return res
-                                .status(500)
-                                .send("Error deleting news data");
-                        }
-                        res.status(200).json(news);
-                    },
-                );
-            } else {
-                res.status(404).send("News not found");
-            }
-        },
-    );
+app.delete("/api/news/:id", authenticateJWT, async (req, res) => {
+    try {
+        const newsId = req.params.id;
+        const deletedNews = await News.findByIdAndDelete(newsId);
+        if (!deletedNews) {
+            return res.status(404).send("News not found");
+        }
+        res.status(200).json({ message: "News deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting news:", error);
+        res.status(500).send("Error deleting news");
+    }
 });
 
 // API route for adding comments to a news item
-app.post("/api/news/:id/comments", (req, res) => {
+app.post("/api/news/:id/comments", async (req, res) => {
     console.log(
         "Received comment submission for news ID:",
         req.params.id,
         "with body:",
         req.body,
     );
-    const newsId = Number(req.params.id);
+    const newsId = req.params.id;
     const { author, text } = req.body;
 
     if (!author || !text) {
@@ -679,51 +461,31 @@ app.post("/api/news/:id/comments", (req, res) => {
         });
     }
 
-    fs.readFile(
-        path.join(__dirname, "..", "news.json"),
-        "utf8",
-        (err, data) => {
-            if (err) {
-                console.error("Error reading news.json:", err);
-                return res.status(500).send("Error reading news data");
-            }
-            let news = JSON.parse(data);
-            const newsIndex = news.findIndex((n) => n.id === newsId);
+    try {
+        const newsItem = await News.findById(newsId);
+        if (!newsItem) {
+            return res.status(404).send("News not found");
+        }
 
-            if (newsIndex !== -1) {
-                const newComment = {
-                    id: Date.now(),
-                    author,
-                    text,
-                    date: new Date().toISOString(),
-                    approved: false, // Comments need admin approval
-                    likes: 0,
-                    dislikes: 0,
-                };
-                news[newsIndex].comments.push(newComment);
+        const newComment = {
+            author,
+            text,
+            createdAt: new Date().toISOString(),
+            approved: false, // Comments need admin approval
+        };
+        newsItem.comments.push(newComment);
+        await newsItem.save();
 
-                fs.writeFile(
-                    path.join(__dirname, "..", "news.json"),
-                    JSON.stringify(news, null, 2),
-                    "utf8",
-                    (err) => {
-                        if (err) {
-                            console.error("Error writing news.json:", err);
-                            return res.status(500).send("Error saving comment");
-                        }
-                        res.status(201).json({
-                            success: true,
-                            message:
-                                "کامنت شما با موفقیت ثبت شد و پس از تایید نمایش داده خواهد شد.",
-                            comment: newComment,
-                        });
-                    },
-                );
-            } else {
-                res.status(404).send("News not found");
-            }
-        },
-    );
+        res.status(201).json({
+            success: true,
+            message:
+                "کامنت شما با موفقیت ثبت شد و پس از تایید نمایش داده خواهد شد.",
+            comment: newComment,
+        });
+    } catch (error) {
+        console.error("Error adding comment:", error);
+        res.status(500).send("Error saving comment");
+    }
 });
 
 // Admin Login Route
