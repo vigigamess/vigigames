@@ -1,6 +1,6 @@
 [build]
   command = "rm -rf uploads && cd backend && npm install && npm run build"
-  publish = "build"
+  publish = "backend/build"
 
 [[redirects]]
   from = "/api/*"
