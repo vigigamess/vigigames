@@ -129,7 +129,6 @@ const newsPaginationContainer = document.getElementById('news-pagination');
 
 // duplicate declaration removed
 const newsImageInput = document.getElementById('news-image');
-const newsFileBtnText = document.querySelector('#news-form .file-upload-btn');
 const loginModal = document.getElementById('login-modal');
 const adminModal = document.getElementById('admin-modal');
 const projectForm = document.getElementById('project-form');
@@ -345,10 +344,7 @@ window.editNews = async function(id) {
         document.getElementById('news-id').value = newsItem.id;
         document.getElementById('news-title').value = newsItem.title;
         tinymce.get('news-content').setContent(newsItem.content); // Set content for TinyMCE
-        // For image, we don't pre-fill the input for security reasons, but we can show current image
-        // document.getElementById('news-image').value = newsItem.image; 
-        newsFileBtnText.innerHTML = newsItem.image ? `<i class="fa-solid fa-image"></i> ${newsItem.image.split('/').pop()}` : '<i class="fa-solid fa-cloud-arrow-up"></i> انتخاب تصویر';
-        newsFileBtnText.style.color = 'var(--text-muted)';
+        document.getElementById('news-image').value = newsItem.image || '';
 
         // Update modal title
         document.getElementById('news-modal-title').textContent = 'ویرایش خبر';
