@@ -110,7 +110,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.static(path.join(__dirname, "..")));
+
 
 // API routes for Projects
 app.get("/api/projects", async (req, res) => {
