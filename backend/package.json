@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf build && mkdir -p build && cp server.js build/ && cp package.json build/"
+    "build": "rm -rf build && mkdir -p build && cp server.js build/ && cp package.json build/ && ln -s /tmp/uploads build/uploads"
   },
   "keywords": [],
   "author": "",
