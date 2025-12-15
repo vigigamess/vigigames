@@ -1,5 +1,5 @@
 [build]
-  command = "cd backend && npm install && npm run build"
+  command = "cd backend && npm install && npm run build && ln -s /tmp uploads"
   publish = "backend/build"
 
 [[redirects]]
