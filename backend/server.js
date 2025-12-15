@@ -1,3 +1,25 @@
+const fs = require('fs');
+const path = require('path');
+
+// Ensure 'uploads' directory exists and is writable, or link to /tmp
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    try {
+        fs.mkdirSync(uploadsDir);
+    } catch (error) {
+        if (error.code === 'EROFS') {
+            console.warn('Read-only file system detected. Attempting to create symbolic link for uploads to /tmp.');
+            const tempUploadsDir = '/tmp/uploads';
+            if (!fs.existsSync(tempUploadsDir)) {
+                fs.mkdirSync(tempUploadsDir, { recursive: true });
+            }            fs.symlinkSync(tempUploadsDir, uploadsDir, 'dir');
+            console.log('Symbolic link created for uploads to /tmp/uploads.');
+        } else {
+            throw error;
+        }
+    }
+}
+
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
